@@ -20,6 +20,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/user")
@@ -93,5 +94,70 @@ public class UserController {
 		List<Contact> contacts= contactRepository.findContactByUser(user.getId());
 		model.addAttribute("contacts",contacts);
 		return "normal/show_contacts";
+	}
+
+	//delete contact handler
+	@GetMapping("/delete/{id}")
+	public String deleteContact(@PathVariable("id") Integer cid,Model model,Principal principal,HttpSession http){
+		Optional<Contact> contactOptional =this.contactRepository.findById(cid);
+		Contact contact = contactOptional.get();
+		String name =principal.getName();
+		User user = userRepository.getUserByUserName(name);
+		if(user.getId()==contact.getUser().getId()) {
+			user.getContacts().remove(contact);
+			this.userRepository.save(user);
+			http.setAttribute("message",new Message("Your detail deleted successfully","success"));
+		}else{
+			http.setAttribute("message",new Message("Sorry you are not authorized to delete this detail's","danger"));
+		}
+		return "redirect:/user/show-contacts";
+	}
+
+	//update user contacts
+	@PostMapping("/update-contact/{id}")
+	public String updateContacts(@PathVariable("id")Integer cId,Model model){
+		model.addAttribute("title","Update Contacts");
+		Contact contact=this.contactRepository.findById(cId).get();
+		model.addAttribute("contact",contact);
+		return "normal/update_contact";
+	}
+
+	@PostMapping("/process-update")
+	public String Update(@ModelAttribute Contact contact,
+								 @RequestParam("profileImage") MultipartFile file,Model model,
+								 Principal principal, HttpSession http){
+		try {
+			Contact oldContactDetails=this.contactRepository.findById(contact.getId()).get();
+
+			//processing and uploading file
+			if(!file.isEmpty()){
+				//delete old file
+				File deleteFile = new ClassPathResource("static/image").getFile();
+				File file1 = new File(deleteFile,oldContactDetails.getImage());
+				file1.delete();
+
+				//update new file
+				File saveFile = new ClassPathResource("static/image").getFile();
+				Path path = Paths.get(saveFile.getAbsolutePath()+File.separator+file.getOriginalFilename());
+				Files.copy(file.getInputStream(),path, StandardCopyOption.REPLACE_EXISTING);
+				contact.setImage(file.getOriginalFilename());
+			}else{
+				contact.setImage(oldContactDetails.getImage());
+
+			}
+			User user = userRepository.getUserByUserName( principal.getName());
+			contact.setUser(user);
+			this.contactRepository.save(contact);
+			//success message send to user
+			http.setAttribute("message",new Message("Contact updated to database","success"));
+		}catch (Exception e){
+			System.out.println("error"+e.getMessage());
+			e.printStackTrace();
+			//Failed message send to user
+			http.setAttribute("message",new Message("Something went wrong","danger"));
+		}
+
+
+		return "redirect:/user/show-contacts";
 	}
 }
