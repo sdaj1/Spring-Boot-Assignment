@@ -83,6 +83,19 @@ public class Contact {
 	public void setUser(User user) {
 		this.user = user;
 	}
-	
-	
+
+	/*@Override
+	public String toString() {
+		return "Contact{" +
+				"id=" + id +
+				", name='" + name + '\'' +
+				", secondName='" + secondName + '\'' +
+				", work='" + work + '\'' +
+				", email='" + email + '\'' +
+				", phone='" + phone + '\'' +
+				", image='" + image + '\'' +
+				", description='" + description + '\'' +
+				", user=" + user +
+				'}';
+	}*/
 }

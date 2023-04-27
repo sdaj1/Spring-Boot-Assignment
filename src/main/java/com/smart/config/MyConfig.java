@@ -40,7 +40,8 @@ public class MyConfig{
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http)throws Exception{
 		http.authorizeHttpRequests().requestMatchers("/user/**").hasRole("USER").requestMatchers("/admin/**").hasRole("ADMIN")
-		.requestMatchers("/**").permitAll().and().formLogin().loginPage("/signing").and().csrf().disable();
+		.requestMatchers("/**").permitAll().and().formLogin().loginPage("/signing")
+				.and().csrf().disable();
 		return http.build();
 	}
 
