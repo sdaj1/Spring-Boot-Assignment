@@ -42,6 +42,11 @@ public class MyConfig{
 		http.authorizeHttpRequests().requestMatchers("/user/**").hasRole("USER").requestMatchers("/admin/**").hasRole("ADMIN")
 		.requestMatchers("/**").permitAll().and().formLogin().loginPage("/signing")
 				.and().csrf().disable();
+		http.requiresChannel(channel ->
+				channel.anyRequest().requiresSecure())
+				.authorizeHttpRequests(authorize ->
+						authorize.anyRequest().permitAll());
+
 		return http.build();
 	}
 
